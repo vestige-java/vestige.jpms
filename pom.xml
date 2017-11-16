@@ -92,15 +92,14 @@
           <target>1.6</target>
           <excludes>
             <exclude>module-info.java</exclude>
-            <exclude>fr/gaellalire/vestige/jpms/Java9JPMSAccessor.java</exclude>
-            <exclude>fr/gaellalire/vestige/jpms/Java9JPMSModuleAccessor.java</exclude>
+            <exclude>fr/gaellalire/vestige/jpms/Java9*.java</exclude>
           </excludes>
         </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-checkstyle-plugin</artifactId>
         <configuration>
-          <excludes>module-info.java,fr/gaellalire/vestige/jpms/Java9JPMSAccessor.java,fr/gaellalire/vestige/jpms/Java9JPMSModuleAccessor.java</excludes>
+          <excludes>module-info.java,fr/gaellalire/vestige/jpms/Java9*.java</excludes>
         </configuration>
       </plugin>
       <plugin>
@@ -123,7 +122,15 @@
   </build>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <vestige.core.version>2-SNAPSHOT</vestige.core.version>
   </properties>
+  <dependencies>
+    <dependency>
+      <groupId>fr.gaellalire.vestige</groupId>
+      <artifactId>vestige.core</artifactId>
+      <version>${vestige.core.version}</version>
+    </dependency>
+  </dependencies>
   <distributionManagement>
     <repository>
       <id>gaellalire_nexus</id>
@@ -139,14 +146,6 @@
     <developerConnection>scm:git:git@gaellalire.fr:gaellalire/vestige.jpms.git</developerConnection>
     <tag>HEAD</tag>
   </scm>
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.8.2</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
   <profiles>
     <profile>
       <id>java9</id>
@@ -155,8 +154,8 @@
           <resource>
             <directory>${project.basedir}/src/main/resources</directory>
             <excludes>
-              <exclude>module-info.class,fr/gaellalire/vestige/jpms/Java9JPMSAccessor.class</exclude>
-              <exclude>module-info.class,fr/gaellalire/vestige/jpms/Java9JPMSModuleAccessor.class</exclude>
+              <exclude>module-info.class</exclude>
+              <exclude>fr/gaellalire/vestige/jpms/Java9*.class</exclude>
             </excludes>
           </resource>
         </resources>
@@ -169,8 +168,8 @@
               <excludes combine.self="override">
               </excludes>
               <compilerArgs>
-                <arg>--patch-module</arg>
-                <arg>java.base=${project.basedir}/src/main/assembly/moduleEncapsulationBreaker.jar</arg>
+              <arg>--patch-module</arg>
+              <arg>java.base=${project.basedir}/src/main/assembly/moduleEncapsulationBreaker.jar</arg>
               </compilerArgs>
             </configuration>
           </plugin>
@@ -189,8 +188,7 @@
                       <directory>${project.build.outputDirectory}</directory>
                       <includes>
                         <include>module-info.class</include>
-                        <include>fr/gaellalire/vestige/jpms/Java9JPMSAccessor.class</include>
-                        <include>fr/gaellalire/vestige/jpms/Java9JPMSModuleAccessor.class</include>
+                        <include>fr/gaellalire/vestige/jpms/Java9*.class</include>
                       </includes>
                       <filtering>false</filtering>
                     </resource>

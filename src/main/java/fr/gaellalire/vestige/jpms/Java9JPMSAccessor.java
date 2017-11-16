@@ -17,63 +17,51 @@
 
 package fr.gaellalire.vestige.jpms;
 
-import java.io.File;
-import java.lang.module.Configuration;
-import java.lang.module.ModuleFinder;
-import java.lang.reflect.Field;
-import java.net.URL;
-import java.nio.file.Path;
-import java.util.Optional;
-import java.util.Set;
-
 /**
  * This class is the bridge to Java Platform Module System. Vestige can't use JPMS function directly because these functions are only in Java 9.
- * @author gaellalire
+ * @author Gael Lalire
  */
 public class Java9JPMSAccessor implements JPMSAccessor {
 
+    public static final Java9Controller MODULE_ENCAPSULATION_BREAKER;
+
     static {
-        // force ModuleEncapsulationBreaker init
+        Java9Controller moduleEncapsulationBreakerInterface;
         try {
-            Class.forName(ModuleEncapsulationBreaker.class.getName(), true, Thread.currentThread().getContextClassLoader());
-        } catch (ClassNotFoundException e) {
-            throw new Error("Java9 internal changed");
+            moduleEncapsulationBreakerInterface = new Java9ModuleEncapsulationBreakerProxy();
+            Module selfModule = Java9JPMSModuleAccessor.class.getModule();
+            moduleEncapsulationBreakerInterface.addReads(selfModule, selfModule);
+        } catch (Throwable e) {
+            // ok to fail, the module encapsulation breaker is broken or not present
+            moduleEncapsulationBreakerInterface = Java9Controller.DUMMY_INSTANCE;
         }
-    }
-
-    /*
-    public void defineModulesWithManyLoaders(ClassLoader parentClassLoader, File... files) {
-
-        Path[] paths = new Path[files.length];
-        for (int i = 0; i < files.length; i++) {
-            paths[i] = files[i].toPath();
-        }
-        ModuleLayer boot = ModuleLayer.boot();
-        Configuration parent = boot.configuration();
-
-        Configuration cf = parent.resolve(ModuleFinder.of(paths), ModuleFinder.of(), Set.of("myapp"));
-        boot.defineModulesWithManyLoaders(cf, parentClassLoader);
-
-    }
-    */
-
-    @Override
-    public JPMSModuleAccessor findBootModule(String moduleName) {
-        Optional<Module> findModule = ModuleLayer.boot().findModule(moduleName);
-        if (findModule.isPresent()) {
-            return new Java9JPMSModuleAccessor(findModule.get());
-        }
-        return null;
+        MODULE_ENCAPSULATION_BREAKER = moduleEncapsulationBreakerInterface;
     }
 
     @Override
-    public JPMSModuleAccessor getUnnamedModule(ClassLoader classLoader) {
-        return new Java9JPMSModuleAccessor(classLoader.getUnnamedModule());
+    public JPMSModuleLayerAccessor bootLayer() {
+        return new Java9JPMSModuleLayerAccessor(ModuleLayer.boot());
     }
 
     @Override
-    public JPMSModuleAccessor getModule(Class<?> clazz) {
-        return new Java9JPMSModuleAccessor(clazz.getModule());
+    public JPMSModuleAccessor getUnnamedModule(final ClassLoader classLoader) {
+        return new Java9JPMSModuleAccessor(null, classLoader.getUnnamedModule());
+    }
+
+    @Override
+    public JPMSModuleAccessor getModule(final Class<?> clazz) {
+        Module module = clazz.getModule();
+        ModuleLayer layer = module.getLayer();
+        Java9JPMSModuleLayerAccessor layerAccessor = null;
+        if (layer != null) {
+            layerAccessor = new Java9JPMSModuleLayerAccessor(layer, MODULE_ENCAPSULATION_BREAKER);
+        }
+        return new Java9JPMSModuleAccessor(layerAccessor, module);
+    }
+
+    @Override
+    public JPMSModuleLayerRepository createModuleLayerRepository() {
+        return new Java9JPMSModuleLayerRepository();
     }
 
 }

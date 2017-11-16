@@ -20,7 +20,7 @@ package java.lang;
 import java.lang.reflect.ReflectPermission;
 
 /**
- * @author gaellalire
+ * @author Gael Lalire
  */
 public class ModuleEncapsulationBreaker {
 

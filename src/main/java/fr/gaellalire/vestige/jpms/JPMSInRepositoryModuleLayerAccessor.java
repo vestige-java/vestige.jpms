@@ -18,17 +18,10 @@
 package fr.gaellalire.vestige.jpms;
 
 /**
- * This interface is the bridge to Java Platform Module System. Vestige can't use JPMS function directly because these functions are only in Java 9.
  * @author Gael Lalire
  */
-public interface JPMSAccessor {
+public interface JPMSInRepositoryModuleLayerAccessor extends JPMSModuleLayerAccessor {
 
-    JPMSModuleLayerAccessor bootLayer();
-
-    JPMSModuleAccessor getUnnamedModule(ClassLoader classLoader);
-
-    JPMSModuleAccessor getModule(Class<?> clazz);
-
-    JPMSModuleLayerRepository createModuleLayerRepository();
+    int getRepositoryIndex();
 
 }

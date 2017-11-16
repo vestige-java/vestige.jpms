@@ -17,72 +17,137 @@
 
 package fr.gaellalire.vestige.jpms;
 
+import java.util.Optional;
+
 /**
- * @author gaellalire
+ * @author Gael Lalire
  */
 public class Java9JPMSModuleAccessor implements JPMSModuleAccessor {
 
     private Module module;
 
-    public Java9JPMSModuleAccessor(Module module) {
+    private Java9JPMSModuleLayerAccessor layerAccessor;
+
+    private Java9Controller controller;
+
+    public Java9JPMSModuleAccessor(final Java9JPMSModuleLayerAccessor layerAccessor, final Module module) {
+        this.layerAccessor = layerAccessor;
+        if (layerAccessor == null) {
+            this.controller = Java9Controller.DUMMY_INSTANCE;
+        }
+        this.controller = layerAccessor.getController();
         this.module = module;
     }
 
-    public boolean addOpens(String packageName, Module other) {
-        try {
-            ModuleEncapsulationBreaker.addOpens(module, packageName, other);
-            return true;
-        } catch (Exception e) {
-            return false;
+    public void addOpens(final String packageName, final Module other) {
+        controller.addOpens(module, packageName, other);
+    }
+
+    public void addExports(final String packageName, final Module other) {
+        controller.addExports(module, packageName, other);
+    }
+
+    /**
+     * If the caller's module is this module then update this module to read the given module. This method is a no-op if {@code other} is this module (all modules read themselves),
+     * this module is an unnamed module (as unnamed modules read all modules), or this module already reads {@code other}.
+     * @implNote <em>Read edges</em> added by this method are <em>weak</em> and do not prevent {@code other} from being GC'ed when this module is strongly reachable.
+     * @param other The other module
+     */
+    public void addReads(final Module other) {
+        controller.addReads(module, other);
+    }
+
+    @Override
+    public void addOpens(final String packageName, final Class<?> other) {
+        addOpens(packageName, other.getModule());
+    }
+
+    @Override
+    public void addOpens(final String packageName, final ClassLoader other) {
+        addOpens(packageName, other.getUnnamedModule());
+    }
+
+    @Override
+    public void addExports(final String packageName, final Class<?> other) {
+        addExports(packageName, other.getModule());
+    }
+
+    @Override
+    public void addExports(final String packageName, final ClassLoader other) {
+        addExports(packageName, other.getUnnamedModule());
+    }
+
+    @Override
+    public void addReads(final Class<?> other) {
+        addReads(other.getModule());
+    }
+
+    @Override
+    public void addReads(final ClassLoader other) {
+        addReads(other.getUnnamedModule());
+    }
+
+    @Override
+    public void addReads(final String moduleName) {
+        if (!module.isNamed()) {
+            return;
+        }
+        ModuleLayer layer = module.getLayer();
+        if (layer != null) {
+            Optional<Module> other = layer.findModule(moduleName);
+            if (other.isPresent()) {
+                addReads(other.get());
+            }
         }
     }
 
-    public boolean addExports(String packageName, Module other) {
-        try {
-            ModuleEncapsulationBreaker.addExports(module, packageName, other);
-            return true;
-        } catch (Exception e) {
-            return false;
+    @Override
+    public Java9JPMSModuleLayerAccessor getModuleLayer() {
+        return layerAccessor;
+    }
+
+    @Override
+    public ClassLoader getClassLoader() {
+        return module.getClassLoader();
+    }
+
+    public Module findModule(final String moduleName) {
+        Optional<Module> findModule = layerAccessor.getModuleLayer().findModule(moduleName);
+        if (!findModule.isPresent()) {
+            return null;
         }
+        return findModule.get();
     }
 
-    public boolean addReads(Module other) {
-        try {
-            ModuleEncapsulationBreaker.addReads(module, other);
-            return true;
-        } catch (Exception e) {
-            return false;
+    public Java9Controller findModuleController(final Module otherModule) {
+        ModuleLayer otherLayer = otherModule.getLayer();
+        if (otherLayer == null) {
+            // a module with no layer already export / opens all its packages
+            return Java9Controller.DUMMY_INSTANCE;
         }
+        Java9Controller controller = layerAccessor.findModuleController(otherLayer);
+        if (controller == null) {
+            return Java9JPMSAccessor.MODULE_ENCAPSULATION_BREAKER;
+        }
+        return controller;
     }
 
     @Override
-    public boolean addOpens(String packageName, Class<?> other) {
-        return addOpens(packageName, other.getModule());
+    public void addOpens(final String packageName, final String targetModuleName) {
+        Module module = findModule(targetModuleName);
+        if (module == null) {
+            return;
+        }
+        findModuleController(module).addOpens(module, packageName, module);
     }
 
     @Override
-    public boolean addOpens(String packageName, ClassLoader other) {
-        return addOpens(packageName, other.getUnnamedModule());
-    }
-
-    @Override
-    public boolean addExports(String packageName, Class<?> other) {
-        return addExports(packageName, other.getModule());
-    }
-
-    @Override
-    public boolean addExports(String packageName, ClassLoader other) {
-        return addExports(packageName, other.getUnnamedModule());
-    }
-
-    @Override
-    public boolean addReads(Class<?> other) {
-        return addReads(other.getModule());
-    }
-
-    @Override
-    public boolean addReads(ClassLoader other) {
-        return addReads(other.getUnnamedModule());
+    public void addExports(final String packageName, final String targetModuleName) {
+        Module module = findModule(targetModuleName);
+        if (module == null) {
+            return;
+        }
+        findModuleController(module).addExports(module, packageName, module);
     }
 
 }

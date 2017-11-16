@@ -18,7 +18,7 @@
 package fr.gaellalire.vestige.jpms;
 
 /**
- * @author gaellalire
+ * @author Gael Lalire
  */
 public final class JPMSAccessorLoader {
 
@@ -32,13 +32,26 @@ public final class JPMSAccessorLoader {
                     Thread.currentThread().getContextClassLoader());
             java9JPMS = java9JPMSAccessorClass.getDeclaredConstructor().newInstance();
         } catch (Throwable e) {
-            // it is ok to fail
+            // it is ok to fail, we are not on a JDK 9+
         }
         if (java9JPMS != null) {
             INSTANCE = java9JPMS;
         } else {
             INSTANCE = null;
         }
+    }
+
+    public static JPMSAccessor loadWithController(final Object controller) {
+        JPMSAccessor java9JPMS = null;
+        try {
+            @SuppressWarnings("unchecked")
+            Class<? extends JPMSAccessor> java9JPMSAccessorClass = (Class<? extends JPMSAccessor>) Class.forName("fr.gaellalire.vestige.jpms.Java9JPMSAccessor", true,
+                    Thread.currentThread().getContextClassLoader());
+            java9JPMS = java9JPMSAccessorClass.getDeclaredConstructor(Object.class).newInstance(controller);
+        } catch (Throwable e) {
+            // it is ok to fail, we are not on a JDK 9+
+        }
+        return java9JPMS;
     }
 
 }

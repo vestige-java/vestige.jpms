@@ -18,20 +18,30 @@
 package fr.gaellalire.vestige.jpms;
 
 /**
- * @author gaellalire
+ * @author Gael Lalire
  */
 public interface JPMSModuleAccessor {
 
-    boolean addOpens(String packageName, Class<?> other);
+    void addOpens(String packageName, String targetModuleName);
 
-    boolean addOpens(String packageName, ClassLoader other);
+    void addExports(String packageName, String targetModuleName);
 
-    boolean addExports(String packageName, Class<?> other);
+    void addOpens(String packageName, Class<?> other);
 
-    boolean addExports(String packageName, ClassLoader other);
+    void addOpens(String packageName, ClassLoader other);
 
-    boolean addReads(Class<?> other);
+    void addExports(String packageName, Class<?> other);
 
-    boolean addReads(ClassLoader other);
+    void addExports(String packageName, ClassLoader other);
+
+    void addReads(String targetModuleName);
+
+    void addReads(Class<?> other);
+
+    void addReads(ClassLoader other);
+
+    JPMSModuleLayerAccessor getModuleLayer();
+
+    ClassLoader getClassLoader();
 
 }
