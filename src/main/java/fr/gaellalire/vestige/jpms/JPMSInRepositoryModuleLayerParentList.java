@@ -17,19 +17,23 @@
 
 package fr.gaellalire.vestige.jpms;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+
 /**
  * @author Gael Lalire
  */
-public interface JPMSModuleLayerRepository {
+public interface JPMSInRepositoryModuleLayerParentList {
 
-    int BOOT_LAYER_INDEX = -1;
+    JPMSModuleLayerRepository getRepository();
 
-    void clean();
+    void clear();
 
-    JPMSInRepositoryModuleLayerParentList createModuleLayerList();
+    void addInRepositoryModuleLayerByIndex(int index);
 
-    JPMSInRepositoryModuleLayerAccessor get(int index);
-
-    int size();
+    <ClassLoaderType extends ClassLoader> JPMSInRepositoryConfiguration<ClassLoaderType> createConfiguration(List<File> beforeFiles, List<File> afterFiles,
+            Collection<String> roots, ModuleLayerLinker<ClassLoaderType> linker) throws IOException;
 
 }

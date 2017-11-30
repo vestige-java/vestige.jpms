@@ -18,6 +18,7 @@
 package fr.gaellalire.vestige.jpms;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -27,7 +28,7 @@ import java.util.Set;
  */
 public interface JPMSModuleLayerAccessor {
 
-    JPMSModuleLayerAccessor defineModules(ClassLoader parentClassLoader, List<File> beforeFiles, List<File> afterFiles, Collection<String> roots, boolean manyLoaders);
+    JPMSConfiguration<ClassLoader> createConfiguration(List<File> beforeFiles, List<File> afterFiles, Collection<String> roots) throws IOException;
 
     JPMSModuleAccessor findModule(String moduleName);
 

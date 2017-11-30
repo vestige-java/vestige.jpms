@@ -119,35 +119,38 @@ public class Java9JPMSModuleAccessor implements JPMSModuleAccessor {
         return findModule.get();
     }
 
-    public Java9Controller findModuleController(final Module otherModule) {
-        ModuleLayer otherLayer = otherModule.getLayer();
-        if (otherLayer == null) {
-            // a module with no layer already export / opens all its packages
-            return Java9Controller.DUMMY_INSTANCE;
-        }
-        Java9Controller controller = layerAccessor.findModuleController(otherLayer);
-        if (controller == null) {
-            return Java9JPMSAccessor.MODULE_ENCAPSULATION_BREAKER;
-        }
-        return controller;
-    }
-
     @Override
     public void addOpens(final String packageName, final String targetModuleName) {
-        Module module = findModule(targetModuleName);
-        if (module == null) {
+        Module targetModule = findModule(targetModuleName);
+        if (targetModule == null) {
             return;
         }
-        findModuleController(module).addOpens(module, packageName, module);
+        controller.addOpens(module, packageName, targetModule);
     }
 
     @Override
     public void addExports(final String packageName, final String targetModuleName) {
-        Module module = findModule(targetModuleName);
-        if (module == null) {
+        Module targetModule = findModule(targetModuleName);
+        if (targetModule == null) {
             return;
         }
-        findModuleController(module).addExports(module, packageName, module);
+        controller.addExports(module, packageName, targetModule);
+    }
+
+    @Override
+    public void requireBootAddOpens(final String sourceModuleName, final String packageName) {
+        Optional<Module> findModule = ModuleLayer.boot().findModule(sourceModuleName);
+        if (findModule.isPresent()) {
+            Java9JPMSAccessor.MODULE_ENCAPSULATION_BREAKER.addOpens(findModule.get(), packageName, module);
+        }
+    }
+
+    @Override
+    public void requireBootAddExports(final String sourceModuleName, final String packageName) {
+        Optional<Module> findModule = ModuleLayer.boot().findModule(sourceModuleName);
+        if (findModule.isPresent()) {
+            Java9JPMSAccessor.MODULE_ENCAPSULATION_BREAKER.addExports(findModule.get(), packageName, module);
+        }
     }
 
 }

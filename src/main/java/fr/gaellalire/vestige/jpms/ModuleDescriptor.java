@@ -25,8 +25,6 @@
 
 package fr.gaellalire.vestige.jpms;
 
-import java.io.DataInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,8 +41,8 @@ import java.util.Set;
  * <p>
  * A module descriptor describes a named module and defines methods to obtain each of its components. The module descriptor for a named module in the Java virtual machine is
  * obtained by invoking the {@link java.lang.Module Module}'s {@link java.lang.Module#getDescriptor getDescriptor} method. Module descriptors can also be created using the
- * {@link ModuleDescriptor.Builder} class or by reading the binary form of a module declaration ({@code module-info.class}) using the {@link #read(InputStream,Supplier) read}
- * methods defined here.
+ * {@link ModuleDescriptor.Builder} class or by reading the binary form of a module declaration ({@code module-info.class}) using the
+ * {@link #read(InputStream,java.util.function.Supplier) read} methods defined here.
  * </p>
  * <p>
  * A module descriptor describes a <em>normal</em>, open, or automatic module. <em>Normal</em> modules and open modules describe their {@link #requires() dependences},
@@ -143,7 +141,7 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
 
         private final String rawCompiledVersion;
 
-        private Requires(Set<Modifier> ms, String mn, Version v, String vs) {
+        private Requires(Set<Modifier> ms, final String mn, final Version v, final String vs) {
             assert v == null || vs == null;
             if (ms.isEmpty()) {
                 ms = Collections.emptySet();
@@ -156,7 +154,7 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
             this.rawCompiledVersion = vs;
         }
 
-        private Requires(Set<Modifier> ms, String mn, Version v, boolean unused) {
+        private Requires(final Set<Modifier> ms, final String mn, final Version v, final boolean unused) {
             this.mods = ms;
             this.name = mn;
             this.compiledVersion = v;
@@ -214,30 +212,35 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
          * @return A negative integer, zero, or a positive integer if this module dependence is less than, equal to, or greater than the given module dependence
          */
         @Override
-        public int compareTo(Requires that) {
-            if (this == that)
+        public int compareTo(final Requires that) {
+            if (this == that) {
                 return 0;
+            }
 
             int c = this.name().compareTo(that.name());
-            if (c != 0)
+            if (c != 0) {
                 return c;
+            }
 
             // modifiers
             long v1 = modsValue(this.modifiers());
             long v2 = modsValue(that.modifiers());
             c = longCompare(v1, v2);
-            if (c != 0)
+            if (c != 0) {
                 return c;
+            }
 
             // compiledVersion
             c = compare(this.compiledVersion, that.compiledVersion);
-            if (c != 0)
+            if (c != 0) {
                 return c;
+            }
 
             // rawCompiledVersion
             c = compare(this.rawCompiledVersion, that.rawCompiledVersion);
-            if (c != 0)
+            if (c != 0) {
                 return c;
+            }
 
             return 0;
         }
@@ -255,9 +258,10 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
          * @return {@code true} if, and only if, the given object is a module dependence that is equal to this module dependence
          */
         @Override
-        public boolean equals(Object ob) {
-            if (!(ob instanceof Requires))
+        public boolean equals(final Object ob) {
+            if (!(ob instanceof Requires)) {
                 return false;
+            }
             Requires that = (Requires) ob;
             return name.equals(that.name) && mods.equals(that.mods) && Objects.equals(compiledVersion, that.compiledVersion)
                     && Objects.equals(rawCompiledVersion, that.rawCompiledVersion);
@@ -274,10 +278,12 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
         @Override
         public int hashCode() {
             int hash = name.hashCode() * 43 + mods.hashCode();
-            if (compiledVersion != null)
+            if (compiledVersion != null) {
                 hash = hash * 43 + compiledVersion.hashCode();
-            if (rawCompiledVersion != null)
+            }
+            if (rawCompiledVersion != null) {
                 hash = hash * 43 + rawCompiledVersion.hashCode();
+            }
             return hash;
         }
 
@@ -337,7 +343,7 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
         /**
          * Constructs an export
          */
-        private Exports(Set<Modifier> ms, String source, Set<String> targets) {
+        private Exports(Set<Modifier> ms, final String source, final Set<String> targets) {
             if (ms.isEmpty()) {
                 ms = Collections.emptySet();
             } else {
@@ -348,7 +354,7 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
             this.targets = emptyOrUnmodifiableSet(targets);
         }
 
-        private Exports(Set<Modifier> ms, String source, Set<String> targets, boolean unused) {
+        private Exports(final Set<Modifier> ms, final String source, final Set<String> targets, final boolean unused) {
             this.mods = ms;
             this.source = source;
             this.targets = targets;
@@ -399,25 +405,29 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
          * @return A negative integer, zero, or a positive integer if this module export is less than, equal to, or greater than the given export dependence
          */
         @Override
-        public int compareTo(Exports that) {
-            if (this == that)
+        public int compareTo(final Exports that) {
+            if (this == that) {
                 return 0;
+            }
 
             int c = source.compareTo(that.source);
-            if (c != 0)
+            if (c != 0) {
                 return c;
+            }
 
             // modifiers
             long v1 = modsValue(this.modifiers());
             long v2 = modsValue(that.modifiers());
             c = longCompare(v1, v2);
-            if (c != 0)
+            if (c != 0) {
                 return c;
+            }
 
             // targets
             c = compare(targets, that.targets);
-            if (c != 0)
+            if (c != 0) {
                 return c;
+            }
 
             return 0;
         }
@@ -449,9 +459,10 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
          * @return {@code true} if, and only if, the given object is a module dependence that is equal to this module dependence
          */
         @Override
-        public boolean equals(Object ob) {
-            if (!(ob instanceof Exports))
+        public boolean equals(final Object ob) {
+            if (!(ob instanceof Exports)) {
                 return false;
+            }
             Exports other = (Exports) ob;
             return Objects.equals(this.mods, other.mods) && Objects.equals(this.source, other.source) && Objects.equals(this.targets, other.targets);
         }
@@ -463,10 +474,11 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
         @Override
         public String toString() {
             String s = ModuleDescriptor.toString(mods, source);
-            if (targets.isEmpty())
+            if (targets.isEmpty()) {
                 return s;
-            else
+            } else {
                 return s + " to " + targets;
+            }
         }
     }
 
@@ -513,7 +525,7 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
         /**
          * Constructs an Opens
          */
-        private Opens(Set<Modifier> ms, String source, Set<String> targets) {
+        private Opens(Set<Modifier> ms, final String source, final Set<String> targets) {
             if (ms.isEmpty()) {
                 ms = Collections.emptySet();
             } else {
@@ -524,7 +536,7 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
             this.targets = emptyOrUnmodifiableSet(targets);
         }
 
-        private Opens(Set<Modifier> ms, String source, Set<String> targets, boolean unused) {
+        private Opens(final Set<Modifier> ms, final String source, final Set<String> targets, final boolean unused) {
             this.mods = ms;
             this.source = source;
             this.targets = targets;
@@ -575,25 +587,29 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
          * @return A negative integer, zero, or a positive integer if this module opens is less than, equal to, or greater than the given module opens
          */
         @Override
-        public int compareTo(Opens that) {
-            if (this == that)
+        public int compareTo(final Opens that) {
+            if (this == that) {
                 return 0;
+            }
 
             int c = source.compareTo(that.source);
-            if (c != 0)
+            if (c != 0) {
                 return c;
+            }
 
             // modifiers
             long v1 = modsValue(this.modifiers());
             long v2 = modsValue(that.modifiers());
             c = longCompare(v1, v2);
-            if (c != 0)
+            if (c != 0) {
                 return c;
+            }
 
             // targets
             c = compare(targets, that.targets);
-            if (c != 0)
+            if (c != 0) {
                 return c;
+            }
 
             return 0;
         }
@@ -625,9 +641,10 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
          * @return {@code true} if, and only if, the given object is a module dependence that is equal to this module dependence
          */
         @Override
-        public boolean equals(Object ob) {
-            if (!(ob instanceof Opens))
+        public boolean equals(final Object ob) {
+            if (!(ob instanceof Opens)) {
                 return false;
+            }
             Opens other = (Opens) ob;
             return Objects.equals(this.mods, other.mods) && Objects.equals(this.source, other.source) && Objects.equals(this.targets, other.targets);
         }
@@ -639,10 +656,11 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
         @Override
         public String toString() {
             String s = ModuleDescriptor.toString(mods, source);
-            if (targets.isEmpty())
+            if (targets.isEmpty()) {
                 return s;
-            else
+            } else {
                 return s + " to " + targets;
+            }
         }
     }
 
@@ -660,12 +678,12 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
 
         private final List<String> providers;
 
-        private Provides(String service, List<String> providers) {
+        private Provides(final String service, final List<String> providers) {
             this.service = service;
             this.providers = Collections.unmodifiableList(providers);
         }
 
-        private Provides(String service, List<String> providers, boolean unused) {
+        private Provides(final String service, final List<String> providers, final boolean unused) {
             this.service = service;
             this.providers = providers;
         }
@@ -696,13 +714,15 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
          * @param that The {@code Provides} to compare
          * @return A negative integer, zero, or a positive integer if this provides is less than, equal to, or greater than the given provides
          */
-        public int compareTo(Provides that) {
-            if (this == that)
+        public int compareTo(final Provides that) {
+            if (this == that) {
                 return 0;
+            }
 
             int c = service.compareTo(that.service);
-            if (c != 0)
+            if (c != 0) {
                 return c;
+            }
 
             // compare provider class names in sequence
             int size1 = this.providers.size();
@@ -711,8 +731,9 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
                 String e1 = this.providers.get(index);
                 String e2 = that.providers.get(index);
                 c = e1.compareTo(e2);
-                if (c != 0)
+                if (c != 0) {
                     return c;
+                }
             }
             if (size1 == size2) {
                 return 0;
@@ -746,9 +767,10 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
          * @return {@code true} if, and only if, the given object is a {@code Provides} that is equal to this {@code Provides}
          */
         @Override
-        public boolean equals(Object ob) {
-            if (!(ob instanceof Provides))
+        public boolean equals(final Object ob) {
+            if (!(ob instanceof Provides)) {
                 return false;
+            }
             Provides other = (Provides) ob;
             return Objects.equals(this.service, other.service) && Objects.equals(this.providers, other.providers);
         }
@@ -807,7 +829,7 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
         // Return the index of the first character not taken
         // Requires: s.charAt(i) is (decimal) numeric
         //
-        private static int takeNumber(String s, int i, List<Object> acc) {
+        private static int takeNumber(final String s, int i, final List<Object> acc) {
             char c = s.charAt(i);
             int d = (c - '0');
             int n = s.length();
@@ -828,13 +850,14 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
         // Return the index of the first character not taken
         // Requires: s.charAt(i) is not '.'
         //
-        private static int takeString(String s, int i, List<Object> acc) {
+        private static int takeString(final String s, int i, final List<Object> acc) {
             int b = i;
             int n = s.length();
             while (++i < n) {
                 char c = s.charAt(i);
-                if (c != '.' && c != '-' && c != '+' && !(c >= '0' && c <= '9'))
+                if (c != '.' && c != '-' && c != '+' && !(c >= '0' && c <= '9')) {
                     continue;
+                }
                 break;
             }
             acc.add(s.substring(b, i));
@@ -849,18 +872,21 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
         // A version with a non-empty pre is less than a version with same seq but no pre
         // Tokens in build may contain '-' and '+'
         //
-        private Version(String v) {
+        private Version(final String v) {
 
-            if (v == null)
+            if (v == null) {
                 throw new IllegalArgumentException("Null version string");
+            }
             int n = v.length();
-            if (n == 0)
+            if (n == 0) {
                 throw new IllegalArgumentException("Empty version string");
+            }
 
             int i = 0;
             char c = v.charAt(i);
-            if (!(c >= '0' && c <= '9'))
+            if (!(c >= '0' && c <= '9')) {
                 throw new IllegalArgumentException(v + ": Version string does not start" + " with a number");
+            }
 
             List<Object> sequence = new ArrayList<Object>(4);
             List<Object> pre = new ArrayList<Object>(2);
@@ -878,23 +904,27 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
                     i++;
                     break;
                 }
-                if (c >= '0' && c <= '9')
+                if (c >= '0' && c <= '9') {
                     i = takeNumber(v, i, sequence);
-                else
+                } else {
                     i = takeString(v, i, sequence);
+                }
             }
 
-            if (c == '-' && i >= n)
+            if (c == '-' && i >= n) {
                 throw new IllegalArgumentException(v + ": Empty pre-release");
+            }
 
             while (i < n) {
                 c = v.charAt(i);
-                if (c >= '0' && c <= '9')
+                if (c >= '0' && c <= '9') {
                     i = takeNumber(v, i, pre);
-                else
+                } else {
                     i = takeString(v, i, pre);
-                if (i >= n)
+                }
+                if (i >= n) {
                     break;
+                }
                 c = v.charAt(i);
                 if (c == '.' || c == '-') {
                     i++;
@@ -906,17 +936,20 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
                 }
             }
 
-            if (c == '+' && i >= n)
+            if (c == '+' && i >= n) {
                 throw new IllegalArgumentException(v + ": Empty pre-release");
+            }
 
             while (i < n) {
                 c = v.charAt(i);
-                if (c >= '0' && c <= '9')
+                if (c >= '0' && c <= '9') {
                     i = takeNumber(v, i, build);
-                else
+                } else {
                     i = takeString(v, i, build);
-                if (i >= n)
+                }
+                if (i >= n) {
                     break;
+                }
                 c = v.charAt(i);
                 if (c == '.' || c == '-' || c == '+') {
                     i++;
@@ -936,38 +969,41 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
          * @return The resulting {@code Version}
          * @throws IllegalArgumentException If {@code v} is {@code null}, an empty string, or cannot be parsed as a version string
          */
-        public static Version parse(String v) {
+        public static Version parse(final String v) {
             return new Version(v);
         }
 
         @SuppressWarnings("unchecked")
-        private int cmp(Object o1, Object o2) {
+        private int cmp(final Object o1, final Object o2) {
             return ((Comparable<Object>) o1).compareTo(o2);
         }
 
-        private int compareTokens(List<Object> ts1, List<Object> ts2) {
+        private int compareTokens(final List<Object> ts1, final List<Object> ts2) {
             int n = Math.min(ts1.size(), ts2.size());
             for (int i = 0; i < n; i++) {
                 Object o1 = ts1.get(i);
                 Object o2 = ts2.get(i);
                 if ((o1 instanceof Integer && o2 instanceof Integer) || (o1 instanceof String && o2 instanceof String)) {
                     int c = cmp(o1, o2);
-                    if (c == 0)
+                    if (c == 0) {
                         continue;
+                    }
                     return c;
                 }
                 // Types differ, so convert number to string form
                 int c = o1.toString().compareTo(o2.toString());
-                if (c == 0)
+                if (c == 0) {
                     continue;
+                }
                 return c;
             }
             List<Object> rest = ts1.size() > ts2.size() ? ts1 : ts2;
             int e = rest.size();
             for (int i = n; i < e; i++) {
                 Object o = rest.get(i);
-                if (o instanceof Integer && ((Integer) o) == 0)
+                if (o instanceof Integer && ((Integer) o) == 0) {
                     continue;
+                }
                 return ts1.size() - ts2.size();
             }
             return 0;
@@ -979,20 +1015,24 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
          * @return A negative integer, zero, or a positive integer as this module version is less than, equal to, or greater than the given module version
          */
         @Override
-        public int compareTo(Version that) {
+        public int compareTo(final Version that) {
             int c = compareTokens(this.sequence, that.sequence);
-            if (c != 0)
+            if (c != 0) {
                 return c;
+            }
             if (this.pre.isEmpty()) {
-                if (!that.pre.isEmpty())
+                if (!that.pre.isEmpty()) {
                     return +1;
+                }
             } else {
-                if (that.pre.isEmpty())
+                if (that.pre.isEmpty()) {
                     return -1;
+                }
             }
             c = compareTokens(this.pre, that.pre);
-            if (c != 0)
+            if (c != 0) {
                 return c;
+            }
             return compareTokens(this.build, that.build);
         }
 
@@ -1008,9 +1048,10 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
          * @return {@code true} if, and only if, the given object is a module reference that is equal to this module reference
          */
         @Override
-        public boolean equals(Object ob) {
-            if (!(ob instanceof Version))
+        public boolean equals(final Object ob) {
+            if (!(ob instanceof Version)) {
                 return false;
+            }
             return compareTo((Version) ob) == 0;
         }
 
@@ -1063,8 +1104,8 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
 
     private final String mainClass;
 
-    private ModuleDescriptor(String name, Version version, String rawVersionString, Set<Modifier> modifiers, Set<Requires> requires, Set<Exports> exports, Set<Opens> opens,
-            Set<String> uses, Set<Provides> provides, Set<String> packages, String mainClass) {
+    private ModuleDescriptor(final String name, final Version version, final String rawVersionString, final Set<Modifier> modifiers, final Set<Requires> requires,
+            final Set<Exports> exports, final Set<Opens> opens, final Set<String> uses, final Set<Provides> provides, final Set<String> packages, final String mainClass) {
         assert version == null || rawVersionString == null;
         this.name = name;
         this.version = version;
@@ -1085,8 +1126,8 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
     /**
      * Creates a module descriptor from its components. The arguments are pre-validated and sets are unmodifiable sets.
      */
-    ModuleDescriptor(String name, Version version, Set<Modifier> modifiers, Set<Requires> requires, Set<Exports> exports, Set<Opens> opens, Set<String> uses,
-            Set<Provides> provides, Set<String> packages, String mainClass, int hashCode, boolean unused) {
+    ModuleDescriptor(final String name, final Version version, final Set<Modifier> modifiers, final Set<Requires> requires, final Set<Exports> exports, final Set<Opens> opens,
+            final Set<String> uses, final Set<Provides> provides, final Set<String> packages, final String mainClass, final int hashCode, final boolean unused) {
         this.name = name;
         this.version = version;
         this.rawVersionString = null;
@@ -1337,7 +1378,7 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
          * Initializes a new builder with the given module name. If {@code strict} is {@code true} then module, package, and class names are checked to ensure they are legal names.
          * In addition, the {@link #build buid} method will add "{@code requires java.base}" if the dependency is not declared.
          */
-        public Builder(String name, boolean strict, Set<Modifier> modifiers) {
+        public Builder(final String name, final boolean strict, final Set<Modifier> modifiers) {
             this.name = name;
             this.strict = strict;
             this.modifiers = modifiers;
@@ -1360,14 +1401,17 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
          * @throws IllegalArgumentException If the dependence is on the module that this builder was initialized to build
          * @throws IllegalStateException If the dependence on the module has already been declared or this builder is for an automatic module
          */
-        public Builder requires(Requires req) {
-            if (automatic)
+        public Builder requires(final Requires req) {
+            if (automatic) {
                 throw new IllegalStateException("Automatic modules cannot declare" + " dependences");
+            }
             String mn = req.name();
-            if (name.equals(mn))
+            if (name.equals(mn)) {
                 throw new IllegalArgumentException("Dependence on self");
-            if (requires.containsKey(mn))
+            }
+            if (requires.containsKey(mn)) {
                 throw new IllegalStateException("Dependence upon " + mn + " already declared");
+            }
             requires.put(mn, req);
             return this;
         }
@@ -1383,19 +1427,20 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
          *         build
          * @throws IllegalStateException If the dependence on the module has already been declared or this builder is for an automatic module
          */
-        public Builder requires(Set<Requires.Modifier> ms, String mn, Version compiledVersion) {
+        public Builder requires(final Set<Requires.Modifier> ms, final String mn, final Version compiledVersion) {
             Objects.requireNonNull(compiledVersion);
             return requires(new Requires(ms, mn, compiledVersion, null));
         }
 
-        /* package */Builder requires(Set<Requires.Modifier> ms, String mn, String rawCompiledVersion) {
+        /* package */Builder requires(final Set<Requires.Modifier> ms, final String mn, final String rawCompiledVersion) {
             Requires r;
             try {
                 Version v = Version.parse(rawCompiledVersion);
                 r = new Requires(ms, mn, v, null);
             } catch (IllegalArgumentException e) {
-                if (strict)
+                if (strict) {
                     throw e;
+                }
                 r = new Requires(ms, mn, null, rawCompiledVersion);
             }
             return requires(r);
@@ -1410,7 +1455,7 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
          *         build
          * @throws IllegalStateException If the dependence on the module has already been declared or this builder is for an automatic module
          */
-        public Builder requires(Set<Requires.Modifier> ms, String mn) {
+        public Builder requires(final Set<Requires.Modifier> ms, final String mn) {
             return requires(new Requires(ms, mn, null, null));
         }
 
@@ -1422,7 +1467,7 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
          *         build
          * @throws IllegalStateException If the dependence on the module has already been declared or this builder is for an automatic module
          */
-        public Builder requires(String mn) {
+        public Builder requires(final String mn) {
             return requires(EnumSet.noneOf(Requires.Modifier.class), mn);
         }
 
@@ -1432,7 +1477,7 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
          * @return This builder
          * @throws IllegalStateException If the {@link Exports#source package} is already declared as exported or this builder is for an automatic module
          */
-        public Builder exports(Exports e) {
+        public Builder exports(final Exports e) {
             if (automatic) {
                 throw new IllegalStateException("Automatic modules cannot declare" + " exported packages");
             }
@@ -1455,13 +1500,14 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
          *         contains a name that is not a legal module name
          * @throws IllegalStateException If the package is already declared as exported or this builder is for an automatic module
          */
-        public Builder exports(Set<Exports.Modifier> ms, String pn, Set<String> targets) {
+        public Builder exports(final Set<Exports.Modifier> ms, final String pn, Set<String> targets) {
             Exports e = new Exports(ms, pn, targets);
 
             // check targets
             targets = e.targets();
-            if (targets.isEmpty())
+            if (targets.isEmpty()) {
                 throw new IllegalArgumentException("Empty target set");
+            }
             return exports(e);
         }
 
@@ -1473,7 +1519,7 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
          * @throws IllegalArgumentException If the package name is {@code null} or is not a legal package name
          * @throws IllegalStateException If the package is already declared as exported or this builder is for an automatic module
          */
-        public Builder exports(Set<Exports.Modifier> ms, String pn) {
+        public Builder exports(final Set<Exports.Modifier> ms, final String pn) {
             Exports e = new Exports(ms, pn, Collections.<String> emptySet());
             return exports(e);
         }
@@ -1484,7 +1530,7 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
          * @return This builder
          * @throws IllegalStateException If the package is already declared as open, or this is a builder for an open module or automatic module
          */
-        public Builder opens(Opens obj) {
+        public Builder opens(final Opens obj) {
             if (open || automatic) {
                 throw new IllegalStateException("Open or automatic modules cannot" + " declare open packages");
             }
@@ -1507,13 +1553,14 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
          *         contains a name that is not a legal module name
          * @throws IllegalStateException If the package is already declared as open, or this is a builder for an open module or automatic module
          */
-        public Builder opens(Set<Opens.Modifier> ms, String pn, Set<String> targets) {
+        public Builder opens(final Set<Opens.Modifier> ms, final String pn, Set<String> targets) {
             Opens opens = new Opens(ms, pn, targets);
 
             // check targets
             targets = opens.targets();
-            if (targets.isEmpty())
+            if (targets.isEmpty()) {
                 throw new IllegalArgumentException("Empty target set");
+            }
             return opens(opens);
         }
 
@@ -1525,7 +1572,7 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
          * @throws IllegalArgumentException If the package name is {@code null} or is not a legal package name
          * @throws IllegalStateException If the package is already declared as open, or this is a builder for an open module or automatic module
          */
-        public Builder opens(Set<Opens.Modifier> ms, String pn) {
+        public Builder opens(final Set<Opens.Modifier> ms, final String pn) {
             Opens e = new Opens(ms, pn, Collections.<String> emptySet());
             return opens(e);
         }
@@ -1537,11 +1584,13 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
          * @throws IllegalArgumentException If the service type is {@code null} or not a qualified name of a class in a named package
          * @throws IllegalStateException If a dependency on the service type has already been declared or this is a builder for an automatic module
          */
-        public Builder uses(String service) {
-            if (automatic)
+        public Builder uses(final String service) {
+            if (automatic) {
                 throw new IllegalStateException("Automatic modules can not declare" + " service dependences");
-            if (uses.contains(service))
+            }
+            if (uses.contains(service)) {
                 throw new IllegalStateException("Dependence upon service " + service + " already declared");
+            }
             uses.add(service);
             return this;
         }
@@ -1553,10 +1602,11 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
          * @return This builder
          * @throws IllegalStateException If the providers for the service type have already been declared
          */
-        public Builder provides(Provides p) {
+        public Builder provides(final Provides p) {
             String service = p.service();
-            if (provides.containsKey(service))
+            if (provides.containsKey(service)) {
                 throw new IllegalStateException("Providers of service " + service + " already declared");
+            }
             provides.put(service, p);
             for (String name : p.providers()) {
                 packages.add(packageName(name));
@@ -1573,13 +1623,14 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
          *         list of provider class names is empty
          * @throws IllegalStateException If the providers for the service type have already been declared
          */
-        public Builder provides(String service, List<String> providers) {
+        public Builder provides(final String service, final List<String> providers) {
             Provides p = new Provides(service, providers);
 
             // check providers after the set has been copied.
             List<String> providerNames = p.providers();
-            if (providerNames.isEmpty())
+            if (providerNames.isEmpty()) {
                 throw new IllegalArgumentException("Empty providers set");
+            }
             // Disallow service/providers in unnamed package
             String pn = packageName(service);
             if (pn.isEmpty()) {
@@ -1600,7 +1651,7 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
          * @return This builder
          * @throws IllegalArgumentException If any of the package names is {@code null} or is not a legal package name
          */
-        public Builder packages(Set<String> pns) {
+        public Builder packages(final Set<String> pns) {
             this.packages.addAll(pns);
             return this;
         }
@@ -1612,13 +1663,14 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
          * @throws IllegalArgumentException If {@code vs} is {@code null} or cannot be parsed as a version string
          * @see Version#parse(String)
          */
-        public Builder version(String vs) {
+        public Builder version(final String vs) {
             try {
                 version = Version.parse(vs);
                 rawVersionString = null;
             } catch (IllegalArgumentException e) {
-                if (strict)
+                if (strict) {
                     throw e;
+                }
                 version = null;
                 rawVersionString = vs;
             }
@@ -1632,7 +1684,7 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
          * @return This builder
          * @throws IllegalArgumentException If {@code mainClass} is {@code null} or not a qualified name of a class in a named package
          */
-        public Builder mainClass(String mc) {
+        public Builder mainClass(final String mc) {
             String pn;
             // Disallow main class in unnamed package
             pn = packageName(mc);
@@ -1684,55 +1736,67 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
      * @return A negative integer, zero, or a positive integer if this module descriptor is less than, equal to, or greater than the given module descriptor
      */
     @Override
-    public int compareTo(ModuleDescriptor that) {
-        if (this == that)
+    public int compareTo(final ModuleDescriptor that) {
+        if (this == that) {
             return 0;
+        }
 
         int c = this.name().compareTo(that.name());
-        if (c != 0)
+        if (c != 0) {
             return c;
+        }
 
         c = compare(this.version, that.version);
-        if (c != 0)
+        if (c != 0) {
             return c;
+        }
 
         c = compare(this.rawVersionString, that.rawVersionString);
-        if (c != 0)
+        if (c != 0) {
             return c;
+        }
 
         long v1 = modsValue(this.modifiers());
         long v2 = modsValue(that.modifiers());
         c = longCompare(v1, v2);
-        if (c != 0)
+        if (c != 0) {
             return c;
+        }
 
         c = compare(this.requires, that.requires);
-        if (c != 0)
+        if (c != 0) {
             return c;
+        }
 
         c = compare(this.packages, that.packages);
-        if (c != 0)
+        if (c != 0) {
             return c;
+        }
 
         c = compare(this.exports, that.exports);
-        if (c != 0)
+        if (c != 0) {
             return c;
+        }
 
         c = compare(this.opens, that.opens);
-        if (c != 0)
+        if (c != 0) {
             return c;
+        }
 
         c = compare(this.uses, that.uses);
-        if (c != 0)
+        if (c != 0) {
             return c;
+        }
 
         c = compare(this.provides, that.provides);
-        if (c != 0)
+        if (c != 0) {
             return c;
+        }
 
         c = compare(this.mainClass, that.mainClass);
-        if (c != 0)
+        if (c != 0) {
             return c;
+        }
 
         return 0;
     }
@@ -1750,11 +1814,13 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
      * @return {@code true} if, and only if, the given object is a module descriptor that is equal to this module descriptor
      */
     @Override
-    public boolean equals(Object ob) {
-        if (ob == this)
+    public boolean equals(final Object ob) {
+        if (ob == this) {
             return true;
-        if (!(ob instanceof ModuleDescriptor))
+        }
+        if (!(ob instanceof ModuleDescriptor)) {
             return false;
+        }
         ModuleDescriptor that = (ModuleDescriptor) ob;
         return (name.equals(that.name) && modifiers.equals(that.modifiers) && requires.equals(that.requires) && Objects.equals(packages, that.packages)
                 && exports.equals(that.exports) && opens.equals(that.opens) && uses.equals(that.uses) && provides.equals(that.provides) && Objects.equals(version, that.version)
@@ -1783,8 +1849,9 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
             hc = hc * 43 + Objects.hashCode(version);
             hc = hc * 43 + Objects.hashCode(rawVersionString);
             hc = hc * 43 + Objects.hashCode(mainClass);
-            if (hc == 0)
+            if (hc == 0) {
                 hc = -1;
+            }
             hash = hc;
         }
         return hc;
@@ -1802,17 +1869,22 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
     public String toString() {
         StringBuilder sb = new StringBuilder();
 
-        if (isOpen())
+        if (isOpen()) {
             sb.append("open ");
+        }
         sb.append("module { name: ").append(toNameAndVersion());
-        if (!requires.isEmpty())
+        if (!requires.isEmpty()) {
             sb.append(", ").append(requires);
-        if (!uses.isEmpty())
+        }
+        if (!uses.isEmpty()) {
             sb.append(", uses: ").append(uses);
-        if (!exports.isEmpty())
+        }
+        if (!exports.isEmpty()) {
             sb.append(", exports: ").append(exports);
-        if (!opens.isEmpty())
+        }
+        if (!opens.isEmpty()) {
             sb.append(", opens: ").append(opens);
+        }
         if (!provides.isEmpty()) {
             sb.append(", provides: ").append(provides);
         }
@@ -1828,28 +1900,16 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
      * @throws IllegalArgumentException If the module name is {@code null} or is not a legal module name, or the set of modifiers contains {@link Modifier#AUTOMATIC AUTOMATIC} with
      *         other modifiers
      */
-    public static Builder newModule(String name, Set<Modifier> ms) {
+    public static Builder newModule(final String name, final Set<Modifier> ms) {
         Set<Modifier> mods = new HashSet<Modifier>(ms);
-        if (mods.contains(Modifier.AUTOMATIC) && mods.size() > 1)
+        if (mods.contains(Modifier.AUTOMATIC) && mods.size() > 1) {
             throw new IllegalArgumentException("AUTOMATIC cannot be used with" + " other modifiers");
+        }
 
         return new Builder(name, true, mods);
     }
 
-    /**
-     * Reads the binary form of a module declaration from an input stream as a module descriptor. This method works exactly as specified by the 2-arg
-     * {@link #read(InputStream,Supplier) read} method with the exception that a packager finder is not used to find additional packages when the module descriptor read from the
-     * stream does not indicate the set of packages.
-     * @param in The input stream
-     * @return The module descriptor
-     * @throws InvalidModuleDescriptorException If an invalid module descriptor is detected
-     * @throws IOException If an I/O error occurs reading from the input stream
-     */
-    public static ModuleDescriptor read(InputStream in) throws IOException {
-        return new ModuleInfo().doRead(new DataInputStream(in));
-    }
-
-    private static <T> Set<T> emptyOrUnmodifiableSet(Set<T> set) {
+    private static <T> Set<T> emptyOrUnmodifiableSet(final Set<T> set) {
         if (set.isEmpty()) {
             return Collections.emptySet();
         } else if (set.size() == 1) {
@@ -1859,7 +1919,7 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
         }
     }
 
-    private static String packageName(String cn) {
+    private static String packageName(final String cn) {
         int index = cn.lastIndexOf('.');
         return (index == -1) ? "" : cn.substring(0, index);
     }
@@ -1867,7 +1927,7 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
     /**
      * Returns a string containing the given set of modifiers and label.
      */
-    private static <M> String toString(Set<M> mods, String what) {
+    private static <M> String toString(final Set<M> mods, final String what) {
 
         StringBuilder stringBuilder = new StringBuilder();
         boolean first = true;
@@ -1888,7 +1948,7 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
         return stringBuilder.toString();
     }
 
-    private static <T extends Object & Comparable<? super T>> int compare(T obj1, T obj2) {
+    private static <T extends Object & Comparable<? super T>> int compare(final T obj1, final T obj2) {
         if (obj1 != null) {
             return (obj2 != null) ? obj1.compareTo(obj2) : 1;
         } else {
@@ -1900,7 +1960,7 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
      * Compares two sets of {@code Comparable} objects.
      */
     @SuppressWarnings("unchecked")
-    private static <T extends Object & Comparable<? super T>> int compare(Set<T> s1, Set<T> s2) {
+    private static <T extends Object & Comparable<? super T>> int compare(final Set<T> s1, final Set<T> s2) {
         T[] a1 = (T[]) s1.toArray();
         T[] a2 = (T[]) s2.toArray();
         Arrays.sort(a1);
@@ -1908,7 +1968,7 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
         return arrayCompare(a1, a2);
     }
 
-    private static <E extends Enum<E>> long modsValue(Set<E> set) {
+    private static <E extends Enum<E>> long modsValue(final Set<E> set) {
         long value = 0;
         for (Enum<E> e : set) {
             value += 1 << e.ordinal();
@@ -1928,7 +1988,7 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
      * @return the value {@code 0} if {@code x == y}; a value less than {@code 0} if {@code x < y}; and a value greater than {@code 0} if {@code x > y}
      * @since 1.7
      */
-    public static int longCompare(long x, long y) {
+    public static int longCompare(final long x, final long y) {
         return (x < y) ? -1 : ((x == y) ? 0 : 1);
     }
 
@@ -1979,12 +2039,14 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
      *         lexicographically less than the second array; and a value greater than {@code 0} if the first array is lexicographically greater than the second array
      * @since 9
      */
-    public static <T extends Comparable<? super T>> int arrayCompare(T[] a, T[] b) {
-        if (a == b)
+    public static <T extends Comparable<? super T>> int arrayCompare(final T[] a, final T[] b) {
+        if (a == b) {
             return 0;
+        }
         // A null array is less than a non-null array
-        if (a == null || b == null)
+        if (a == null || b == null) {
             return a == null ? -1 : 1;
+        }
 
         int length = Math.min(a.length, b.length);
         for (int i = 0; i < length; i++) {
@@ -1992,8 +2054,9 @@ public class ModuleDescriptor implements Comparable<ModuleDescriptor> {
             T ob = b[i];
             if (oa != ob) {
                 // A null element is less than a non-null element
-                if (oa == null || ob == null)
+                if (oa == null || ob == null) {
                     return oa == null ? -1 : 1;
+                }
                 int v = oa.compareTo(ob);
                 if (v != 0) {
                     return v;

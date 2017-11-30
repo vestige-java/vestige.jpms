@@ -17,11 +17,17 @@
 
 package fr.gaellalire.vestige.jpms;
 
+import java.util.List;
+
 /**
  * @author Gael Lalire
  */
 public interface JPMSInRepositoryModuleLayerAccessor extends JPMSModuleLayerAccessor {
 
     int getRepositoryIndex();
+
+    List<? extends JPMSInRepositoryModuleLayerAccessor> parents();
+
+    JPMSModuleLayerRepository getRepository();
 
 }

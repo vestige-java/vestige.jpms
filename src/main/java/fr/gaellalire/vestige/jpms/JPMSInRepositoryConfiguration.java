@@ -17,19 +17,15 @@
 
 package fr.gaellalire.vestige.jpms;
 
+import fr.gaellalire.vestige.core.function.Function;
+
 /**
  * @author Gael Lalire
  */
-public interface JPMSModuleLayerRepository {
+public interface JPMSInRepositoryConfiguration<ClassLoaderType extends ClassLoader> extends JPMSConfiguration<ClassLoaderType> {
 
-    int BOOT_LAYER_INDEX = -1;
+    JPMSInRepositoryModuleLayerAccessor defineModules(Function<String, ClassLoaderType, RuntimeException> classLoaderByModuleName);
 
-    void clean();
-
-    JPMSInRepositoryModuleLayerParentList createModuleLayerList();
-
-    JPMSInRepositoryModuleLayerAccessor get(int index);
-
-    int size();
+    JPMSModuleLayerRepository getRepository();
 
 }

@@ -17,21 +17,14 @@
 
 package fr.gaellalire.vestige.jpms;
 
-import java.io.File;
-import java.util.Collection;
-import java.util.List;
-
 /**
  * @author Gael Lalire
  */
-public interface JPMSInRepositoryModuleLayerList {
+public interface ModuleLayerLinker<ClassLoaderType extends ClassLoader> {
 
-    JPMSModuleLayerRepository getRepository();
-
-    void clear();
-
-    void addInRepositoryModuleLayerByIndex(int index);
-
-    JPMSInRepositoryModuleLayerAccessor defineModules(ClassLoader parentClassLoader, List<File> beforeFiles, List<File> afterFiles, Collection<String> roots, boolean manyLoaders);
+    /**
+     * Ask classLoader to keep a strong reference to moduleLayer. So while classLoader is not GC, moduleLayer can't be GC either.
+     */
+    void link(JPMSInRepositoryModuleLayerAccessor moduleLayer, ClassLoaderType classLoader);
 
 }

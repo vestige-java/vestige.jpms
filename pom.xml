@@ -45,6 +45,7 @@
           <artifactId>maven-javadoc-plugin</artifactId>
           <version>2.10.3</version>
           <configuration>
+            <skip>true</skip>
             <sourceFileExcludes>
               <sourceFileExclude>module-info.java</sourceFileExclude>
             </sourceFileExcludes>
@@ -122,13 +123,14 @@
   </build>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <vestige.core.version>2-SNAPSHOT</vestige.core.version>
+    <vestige.core.version>2</vestige.core.version>
   </properties>
   <dependencies>
     <dependency>
       <groupId>fr.gaellalire.vestige</groupId>
       <artifactId>vestige.core</artifactId>
       <version>${vestige.core.version}</version>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
   <distributionManagement>
@@ -168,8 +170,8 @@
               <excludes combine.self="override">
               </excludes>
               <compilerArgs>
-              <arg>--patch-module</arg>
-              <arg>java.base=${project.basedir}/src/main/assembly/moduleEncapsulationBreaker.jar</arg>
+                <arg>--patch-module</arg>
+                <arg>java.base=${project.basedir}/src/main/assembly/moduleEncapsulationBreaker.jar</arg>
               </compilerArgs>
             </configuration>
           </plugin>

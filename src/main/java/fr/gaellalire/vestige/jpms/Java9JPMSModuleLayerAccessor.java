@@ -18,7 +18,7 @@
 package fr.gaellalire.vestige.jpms;
 
 import java.io.File;
-import java.lang.ModuleLayer.Controller;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -36,15 +36,6 @@ public class Java9JPMSModuleLayerAccessor implements JPMSModuleLayerAccessor {
 
     private ModuleLayer moduleLayer;
 
-    protected void setController(final Java9Controller controller) {
-        this.controller = controller;
-    }
-
-    protected Java9JPMSModuleLayerAccessor(final ModuleLayer moduleLayer) {
-        this.moduleLayer = moduleLayer;
-        this.controller = Java9JPMSAccessor.MODULE_ENCAPSULATION_BREAKER;
-    }
-
     public Java9JPMSModuleLayerAccessor(final ModuleLayer moduleLayer, final Java9Controller controller) {
         this.moduleLayer = moduleLayer;
         this.controller = controller;
@@ -55,21 +46,15 @@ public class Java9JPMSModuleLayerAccessor implements JPMSModuleLayerAccessor {
     }
 
     @Override
-    public JPMSModuleLayerAccessor defineModules(final ClassLoader parentClassLoader, final List<File> beforeFiles, final List<File> afterFiles, final Collection<String> roots,
-            final boolean manyLoaders) {
-        Controller controller = Java9JPMSInRepositoryModuleLayerList.defineModules(Collections.singletonList(this), parentClassLoader, beforeFiles, afterFiles, roots, manyLoaders);
-        ModuleLayer layer = controller.layer();
-        Java9JPMSModuleLayerAccessor layerAccessor = new Java9JPMSModuleLayerAccessor(layer);
-        Java9WeakReferenceController<Void> weakController = new Java9WeakReferenceController<Void>(controller);
-        layerAccessor.setController(new Java9StrongReferenceController(layer, weakController));
-        return layerAccessor;
-    }
-
-    @Override
     public JPMSModuleAccessor findModule(final String moduleName) {
         Optional<Module> findModule = moduleLayer.findModule(moduleName);
         if (findModule.isPresent()) {
-            return new Java9JPMSModuleAccessor(this, findModule.get());
+            Module module = findModule.get();
+            ModuleLayer otherLayer = module.getLayer();
+            if (otherLayer == moduleLayer) {
+                return new Java9JPMSModuleAccessor(this, module);
+            }
+            return new Java9JPMSModuleAccessor(new Java9JPMSModuleLayerAccessor(otherLayer, Java9JPMSAccessor.MODULE_ENCAPSULATION_BREAKER), module);
         }
         return null;
     }
@@ -109,6 +94,12 @@ public class Java9JPMSModuleLayerAccessor implements JPMSModuleLayerAccessor {
 
     public Java9Controller getController() {
         return controller;
+    }
+
+    @Override
+    public JPMSConfiguration<ClassLoader> createConfiguration(final List<File> beforeFiles, final List<File> afterFiles, final Collection<String> roots) throws IOException {
+        return new Java9JPMSConfiguration<ClassLoader>(
+                Java9JPMSInRepositoryModuleLayerParentList.createConfiguration(Collections.singletonList(this), beforeFiles, afterFiles, roots));
     }
 
 }

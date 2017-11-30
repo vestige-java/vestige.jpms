@@ -17,19 +17,20 @@
 
 package fr.gaellalire.vestige.jpms;
 
+import java.util.Set;
+
+import fr.gaellalire.vestige.core.ModuleEncapsulationEnforcer;
+import fr.gaellalire.vestige.core.function.Function;
+
 /**
  * @author Gael Lalire
  */
-public interface JPMSModuleLayerRepository {
+public interface JPMSConfiguration<ClassLoaderType extends ClassLoader> {
 
-    int BOOT_LAYER_INDEX = -1;
+    ModuleEncapsulationEnforcer getModuleEncapsulationEnforcer();
 
-    void clean();
+    Set<String> getEncapsulatedPackageNames();
 
-    JPMSInRepositoryModuleLayerParentList createModuleLayerList();
-
-    JPMSInRepositoryModuleLayerAccessor get(int index);
-
-    int size();
+    JPMSModuleLayerAccessor defineModules(Function<String, ClassLoaderType, RuntimeException> classLoaderByModuleName);
 
 }

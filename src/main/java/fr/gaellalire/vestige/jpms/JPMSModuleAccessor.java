@@ -22,6 +22,10 @@ package fr.gaellalire.vestige.jpms;
  */
 public interface JPMSModuleAccessor {
 
+    void requireBootAddOpens(String sourceModuleName, String packageName);
+
+    void requireBootAddExports(String sourceModuleName, String packageName);
+
     void addOpens(String packageName, String targetModuleName);
 
     void addExports(String packageName, String targetModuleName);

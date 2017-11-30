@@ -40,7 +40,7 @@ public class Java9JPMSAccessor implements JPMSAccessor {
 
     @Override
     public JPMSModuleLayerAccessor bootLayer() {
-        return new Java9JPMSModuleLayerAccessor(ModuleLayer.boot());
+        return new Java9JPMSModuleLayerAccessor(ModuleLayer.boot(), Java9JPMSAccessor.MODULE_ENCAPSULATION_BREAKER);
     }
 
     @Override
