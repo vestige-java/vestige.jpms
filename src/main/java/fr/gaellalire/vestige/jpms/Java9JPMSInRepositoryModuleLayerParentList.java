@@ -101,10 +101,10 @@ public class Java9JPMSInRepositoryModuleLayerParentList implements JPMSInReposit
 
         JPMSVestige.createEnforcerConfiguration(moduleNamesByFile, moduleNameByPackageName, encapsulatedPackageNames, configuration);
         for (File file : beforeFiles) {
-            moduleNames.add(moduleNamesByFile.get(file));
+            moduleNames.add(moduleNamesByFile.get(file.getAbsoluteFile()));
         }
         for (File file : afterFiles) {
-            moduleNames.add(moduleNamesByFile.get(file));
+            moduleNames.add(moduleNamesByFile.get(file.getAbsoluteFile()));
         }
         ModuleEncapsulationEnforcer moduleEncapsulationEnforcer = new ModuleEncapsulationEnforcer(moduleNameByPackageName, new ListIndexStringParser(moduleNames, -2), null);
 
