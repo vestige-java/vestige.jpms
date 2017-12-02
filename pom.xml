@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>fr.gaellalire.vestige</groupId>
   <artifactId>vestige.jpms</artifactId>
-  <version>1.1-SNAPSHOT</version>
+  <version>2.0</version>
   <packaging>jar</packaging>
   <name>Vestige :: JPMS</name>
   <build>
@@ -146,7 +146,7 @@
   <scm>
     <connection>scm:git:git@gaellalire.fr:gaellalire/vestige.jpms.git</connection>
     <developerConnection>scm:git:git@gaellalire.fr:gaellalire/vestige.jpms.git</developerConnection>
-    <tag>HEAD</tag>
+    <tag>vestige.jpms-2.0</tag>
   </scm>
   <profiles>
     <profile>
