@@ -1,26 +1,26 @@
 /*
  * Copyright (c) 2014, 2017, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the LICENSE file that accompanied this code.
  *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
  *
+ * You should have received a copy of the GNU General Public License version
+ * 2 along with this work; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
+ * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+ * or visit www.oracle.com if you need additional information or have any
+ * questions.
  */
 
 package fr.gaellalire.vestige.jpms;
@@ -73,11 +73,12 @@ public final class ModuleInfo {
      * @throws InvalidModuleDescriptorException
      * @throws IllegalArgumentException if thrown by the ModuleDescriptor.Builder because an identifier is not a legal Java identifier, duplicate exports, and many other reasons
      */
-    public ModuleDescriptor doRead(DataInput in) throws IOException {
+    public ModuleDescriptor doRead(final DataInput in) throws IOException {
 
         int magic = in.readInt();
-        if (magic != 0xCAFEBABE)
+        if (magic != 0xCAFEBABE) {
             throw invalidModuleDescriptor("Bad magic number");
+        }
 
         // int minor_version =
         in.readUnsignedShort();
@@ -89,29 +90,35 @@ public final class ModuleInfo {
         ConstantPool cpool = new ConstantPool(in);
 
         int access_flags = in.readUnsignedShort();
-        if (access_flags != ACC_MODULE)
+        if (access_flags != ACC_MODULE) {
             throw invalidModuleDescriptor("access_flags should be ACC_MODULE");
+        }
 
         int this_class = in.readUnsignedShort();
         String mn = cpool.getClassName(this_class);
-        if (!"module-info".equals(mn))
+        if (!"module-info".equals(mn)) {
             throw invalidModuleDescriptor("this_class should be module-info");
+        }
 
         int super_class = in.readUnsignedShort();
-        if (super_class > 0)
+        if (super_class > 0) {
             throw invalidModuleDescriptor("bad #super_class");
+        }
 
         int interfaces_count = in.readUnsignedShort();
-        if (interfaces_count > 0)
+        if (interfaces_count > 0) {
             throw invalidModuleDescriptor("Bad #interfaces");
+        }
 
         int fields_count = in.readUnsignedShort();
-        if (fields_count > 0)
+        if (fields_count > 0) {
             throw invalidModuleDescriptor("Bad #fields");
+        }
 
         int methods_count = in.readUnsignedShort();
-        if (methods_count > 0)
+        if (methods_count > 0) {
             throw invalidModuleDescriptor("Bad #methods");
+        }
 
         int attributes_count = in.readUnsignedShort();
 
@@ -192,7 +199,7 @@ public final class ModuleInfo {
     /**
      * Reads the Module attribute, returning the ModuleDescriptor.Builder to build the corresponding ModuleDescriptor.
      */
-    private Builder readModuleAttribute(DataInput in, ConstantPool cpool) throws IOException {
+    private Builder readModuleAttribute(final DataInput in, final ConstantPool cpool) throws IOException {
         // module_name
         int module_name_index = in.readUnsignedShort();
         String mn = cpool.getModuleName(module_name_index);
@@ -201,12 +208,15 @@ public final class ModuleInfo {
 
         Set<ModuleDescriptor.Modifier> modifiers = new HashSet<ModuleDescriptor.Modifier>();
         boolean open = ((module_flags & ACC_OPEN) != 0);
-        if (open)
+        if (open) {
             modifiers.add(ModuleDescriptor.Modifier.OPEN);
-        if ((module_flags & ACC_SYNTHETIC) != 0)
+        }
+        if ((module_flags & ACC_SYNTHETIC) != 0) {
             modifiers.add(ModuleDescriptor.Modifier.SYNTHETIC);
-        if ((module_flags & ACC_MANDATED) != 0)
+        }
+        if ((module_flags & ACC_MANDATED) != 0) {
             modifiers.add(ModuleDescriptor.Modifier.MANDATED);
+        }
 
         Builder builder = new Builder(mn, false, modifiers);
 
@@ -228,14 +238,18 @@ public final class ModuleInfo {
                 mods = Collections.emptySet();
             } else {
                 mods = new HashSet<Requires.Modifier>();
-                if ((requires_flags & ACC_TRANSITIVE) != 0)
+                if ((requires_flags & ACC_TRANSITIVE) != 0) {
                     mods.add(Requires.Modifier.TRANSITIVE);
-                if ((requires_flags & ACC_STATIC_PHASE) != 0)
+                }
+                if ((requires_flags & ACC_STATIC_PHASE) != 0) {
                     mods.add(Requires.Modifier.STATIC);
-                if ((requires_flags & ACC_SYNTHETIC) != 0)
+                }
+                if ((requires_flags & ACC_SYNTHETIC) != 0) {
                     mods.add(Requires.Modifier.SYNTHETIC);
-                if ((requires_flags & ACC_MANDATED) != 0)
+                }
+                if ((requires_flags & ACC_MANDATED) != 0) {
                     mods.add(Requires.Modifier.MANDATED);
+                }
             }
 
             int requires_version_index = in.readUnsignedShort();
@@ -246,8 +260,9 @@ public final class ModuleInfo {
                 builder.requires(mods, dn, vs);
             }
 
-            if (dn.equals("java.base"))
+            if (dn.equals("java.base")) {
                 requiresJavaBase = true;
+            }
         }
         if (mn.equals("java.base")) {
             if (requires_count > 0) {
@@ -269,10 +284,12 @@ public final class ModuleInfo {
                     mods = Collections.emptySet();
                 } else {
                     mods = new HashSet<Exports.Modifier>();
-                    if ((exports_flags & ACC_SYNTHETIC) != 0)
+                    if ((exports_flags & ACC_SYNTHETIC) != 0) {
                         mods.add(Exports.Modifier.SYNTHETIC);
-                    if ((exports_flags & ACC_MANDATED) != 0)
+                    }
+                    if ((exports_flags & ACC_MANDATED) != 0) {
                         mods.add(Exports.Modifier.MANDATED);
+                    }
                 }
 
                 int exports_to_count = in.readUnsignedShort();
@@ -307,10 +324,12 @@ public final class ModuleInfo {
                     mods = Collections.emptySet();
                 } else {
                     mods = new HashSet<Opens.Modifier>();
-                    if ((opens_flags & ACC_SYNTHETIC) != 0)
+                    if ((opens_flags & ACC_SYNTHETIC) != 0) {
                         mods.add(Opens.Modifier.SYNTHETIC);
-                    if ((opens_flags & ACC_MANDATED) != 0)
+                    }
+                    if ((opens_flags & ACC_MANDATED) != 0) {
                         mods.add(Opens.Modifier.MANDATED);
+                    }
                 }
 
                 int open_to_count = in.readUnsignedShort();
@@ -363,7 +382,7 @@ public final class ModuleInfo {
     /**
      * Reads the ModulePackages attribute
      */
-    private Set<String> readModulePackagesAttribute(DataInput in, ConstantPool cpool) throws IOException {
+    private Set<String> readModulePackagesAttribute(final DataInput in, final ConstantPool cpool) throws IOException {
         int package_count = in.readUnsignedShort();
         Set<String> packages = new HashSet<String>(package_count);
         for (int i = 0; i < package_count; i++) {
@@ -380,7 +399,7 @@ public final class ModuleInfo {
     /**
      * Reads the ModuleMainClass attribute
      */
-    private String readModuleMainClassAttribute(DataInput in, ConstantPool cpool) throws IOException {
+    private String readModuleMainClassAttribute(final DataInput in, final ConstantPool cpool) throws IOException {
         int index = in.readUnsignedShort();
         return cpool.getClassName(index);
     }
@@ -388,42 +407,47 @@ public final class ModuleInfo {
     /**
      * Reads the ModuleTarget attribute
      */
-    private void readModuleTargetAttribute(DataInput in, ConstantPool cpool) throws IOException {
+    private void readModuleTargetAttribute(final DataInput in, final ConstantPool cpool) throws IOException {
 
         int index = in.readUnsignedShort();
-        if (index != 0)
-             cpool.getUtf8(index);
+        if (index != 0) {
+            cpool.getUtf8(index);
+        }
 
     }
 
     /**
      * Reads the ModuleResolution attribute.
      */
-    private void readModuleResolution(DataInput in, ConstantPool cpool) throws IOException {
+    private void readModuleResolution(final DataInput in, final ConstantPool cpool) throws IOException {
         int flags = in.readUnsignedShort();
 
         int reason = 0;
-        if ((flags & WARN_DEPRECATED) != 0)
+        if ((flags & WARN_DEPRECATED) != 0) {
             reason = WARN_DEPRECATED;
+        }
         if ((flags & WARN_DEPRECATED_FOR_REMOVAL) != 0) {
-            if (reason != 0)
+            if (reason != 0) {
                 throw invalidModuleDescriptor("Bad module resolution flags:" + flags);
+            }
             reason = WARN_DEPRECATED_FOR_REMOVAL;
         }
         if ((flags & WARN_INCUBATING) != 0) {
-            if (reason != 0)
+            if (reason != 0) {
                 throw invalidModuleDescriptor("Bad module resolution flags:" + flags);
+            }
         }
     }
 
     /**
      * Returns true if the given attribute can be present at most once in the class file. Returns false otherwise.
      */
-    private static boolean isAttributeAtMostOnce(String name) {
+    private static boolean isAttributeAtMostOnce(final String name) {
 
         if (name.equals(MODULE) || name.equals(SOURCE_FILE) || name.equals(SDE) || name.equals(MODULE_PACKAGES) || name.equals(MODULE_MAIN_CLASS) || name.equals(MODULE_TARGET)
-                || name.equals(MODULE_HASHES) || name.equals(MODULE_RESOLUTION))
+                || name.equals(MODULE_HASHES) || name.equals(MODULE_RESOLUTION)) {
             return true;
+        }
 
         return false;
     }
@@ -431,7 +455,7 @@ public final class ModuleInfo {
     /**
      * Return true if the given attribute name is the name of a pre-defined attribute in JVMS 4.7 that is not allowed in a module-info class.
      */
-    private static boolean isAttributeDisallowed(String name) {
+    private static boolean isAttributeDisallowed(final String name) {
         Set<String> notAllowed = predefinedNotAllowed;
         if (notAllowed == null) {
             notAllowed = new HashSet<String>(Arrays.asList("ConstantValue", "Code", "Deprecated", "StackMapTable", "Exceptions", "EnclosingMethod", "Signature", "LineNumberTable",
@@ -482,7 +506,7 @@ public final class ModuleInfo {
         static final int CONSTANT_Package = 20;
 
         private static class Entry {
-            protected Entry(int tag) {
+            protected Entry(final int tag) {
                 this.tag = tag;
             }
 
@@ -490,7 +514,7 @@ public final class ModuleInfo {
         }
 
         private static class IndexEntry extends Entry {
-            IndexEntry(int tag, int index) {
+            IndexEntry(final int tag, final int index) {
                 super(tag);
                 this.index = index;
             }
@@ -499,14 +523,14 @@ public final class ModuleInfo {
         }
 
         private static class Index2Entry extends Entry {
-            Index2Entry(int tag, int index1, int index2) {
+            Index2Entry(final int tag, final int index1, final int index2) {
                 super(tag);
             }
 
         }
 
         private static class ValueEntry extends Entry {
-            ValueEntry(int tag, Object value) {
+            ValueEntry(final int tag, final Object value) {
                 super(tag);
                 this.value = value;
             }
@@ -516,7 +540,7 @@ public final class ModuleInfo {
 
         final Entry[] pool;
 
-        ConstantPool(DataInput in) throws IOException {
+        ConstantPool(final DataInput in) throws IOException {
             int count = in.readUnsignedShort();
             pool = new Entry[count];
 
@@ -586,7 +610,7 @@ public final class ModuleInfo {
             }
         }
 
-        String getClassName(int index) {
+        String getClassName(final int index) {
             checkIndex(index);
             Entry e = pool[index];
             if (e.tag != CONSTANT_Class) {
@@ -597,7 +621,7 @@ public final class ModuleInfo {
             return value.replace('/', '.'); // internal form -> binary name
         }
 
-        String getPackageName(int index) {
+        String getPackageName(final int index) {
             checkIndex(index);
             Entry e = pool[index];
             if (e.tag != CONSTANT_Package) {
@@ -608,7 +632,7 @@ public final class ModuleInfo {
             return value.replace('/', '.'); // internal form -> binary name
         }
 
-        String getModuleName(int index) {
+        String getModuleName(final int index) {
             checkIndex(index);
             Entry e = pool[index];
             if (e.tag != CONSTANT_Module) {
@@ -618,7 +642,7 @@ public final class ModuleInfo {
             return decodeModuleName(index, value);
         }
 
-        String getUtf8(int index) {
+        String getUtf8(final int index) {
             checkIndex(index);
             Entry e = pool[index];
             if (e.tag != CONSTANT_Utf8) {
@@ -627,12 +651,13 @@ public final class ModuleInfo {
             return (String) (((ValueEntry) e).value);
         }
 
-        void checkIndex(int index) {
-            if (index < 1 || index >= pool.length)
+        void checkIndex(final int index) {
+            if (index < 1 || index >= pool.length) {
                 throw invalidModuleDescriptor("Index into constant pool out of range");
+            }
         }
 
-        void checkUnqualifiedName(String what, int index, String value) {
+        void checkUnqualifiedName(final String what, final int index, final String value) {
             int len = value.length();
             if (len == 0) {
                 throw invalidModuleDescriptor(what + " at entry " + index + " has zero length");
@@ -648,7 +673,7 @@ public final class ModuleInfo {
         /**
          * "Decode" a module name that has been read from the constant pool.
          */
-        String decodeModuleName(int index, String value) {
+        String decodeModuleName(final int index, final String value) {
             int len = value.length();
             if (len == 0) {
                 throw invalidModuleDescriptor("CONSTANT_Module at entry " + index + " is zero length");
@@ -661,8 +686,9 @@ public final class ModuleInfo {
                 }
 
                 // blackslash is the escape character
-                if (cp == '\\')
+                if (cp == '\\') {
                     return decodeModuleName(index, i, value);
+                }
 
                 i += Character.charCount(cp);
             }
@@ -672,7 +698,7 @@ public final class ModuleInfo {
         /**
          * "Decode" a module name that has been read from the constant pool and partly checked for illegal characters (up to position {@code i}).
          */
-        String decodeModuleName(int index, int i, String value) {
+        String decodeModuleName(final int index, int i, final String value) {
             StringBuilder sb = new StringBuilder();
 
             // copy the code points that have been checked
@@ -716,7 +742,7 @@ public final class ModuleInfo {
     /**
      * Returns an InvalidModuleDescriptorException with the given detail message
      */
-    private static InvalidModuleDescriptorException invalidModuleDescriptor(String msg) {
+    private static InvalidModuleDescriptorException invalidModuleDescriptor(final String msg) {
         return new InvalidModuleDescriptorException(msg);
     }
 
